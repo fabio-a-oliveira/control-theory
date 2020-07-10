@@ -72,7 +72,7 @@ elseif strcmp(mode, 'zero_only') % PD controller, no pole
     end
     
 else
-    error('Invalid mode. Valid entries are zero_first, pole_first.')
+    error('Invalid mode. Valid entries are zero_first, pole_first, zero_only.')
 end
 
 end
