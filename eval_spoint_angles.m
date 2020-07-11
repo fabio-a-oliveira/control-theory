@@ -34,7 +34,7 @@ p = P{1};
 
 angles_zeros = mod(atan2((imag(s)-imag(z)),(real(s)-real(z))),2*pi);
 angles_poles = mod(atan2((imag(s)-imag(p)),(real(s)-real(p))),2*pi);
-angles_controller = mod(sum(angles_zeros) - sum(angles_poles),2*pi);
+angles_controller = mod(pi - sum(angles_zeros) + sum(angles_poles),2*pi);
 
 angles_zeros = angles_zeros / unit;
 angles_poles = angles_poles / unit;
