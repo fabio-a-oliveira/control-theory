@@ -1,4 +1,4 @@
-function [H] = lead_compensator(tf,s,mode,angular_contribution,angular_unit)
+function [H] = lead_compensator(tf,s_desired,s_provided,mode,angular_contribution,angular_unit)
 % lead_compensator: Calculates lead/PD cascade compensator with zero, pole and gain
 % to match a required angular contribution. Requires either zero or pole to
 % be selected, will calculate the other one based on the required angular
@@ -8,7 +8,8 @@ function [H] = lead_compensator(tf,s,mode,angular_contribution,angular_unit)
 % INPUTS:
 % - tf: Tranfer function for the plant. Must be either a 'tf' or 'zpk', 
 % symbolic not implemented.
-% - s: Point on s-plane to be included in the root locus via compensator.
+% - s_desired: Point on s-plane to be included in the root locus via compensator.
+% - s_provided: Either pole or zero provided as input.
 % - mode: Must be either 'zero_first', 'pole_first' or 'zero_only'. Determines
 % which parameter will be selected by the user and which will be calculated by
 % the function. For PD controller, use 'zero_only'.
@@ -32,13 +33,13 @@ else
 end
 
 if strcmp(mode,'zero_first')
-    lead_zero = s;
-    theta_lead_zero = atan2((imag(s)-imag(lead_zero)),(real(s)-real(lead_zero)));
+    lead_zero = s_provided;
+    theta_lead_zero = atan2((imag(s_desired)-imag(lead_zero)),(real(s_desired)-real(lead_zero)));
     theta_lead_pole = theta_lead_zero - angle;
-    lead_pole = real(s) - imag(s)/tan(theta_lead_pole);
+    lead_pole = real(s_desired) - imag(s_desired)/tan(theta_lead_pole);
     
     H_unit_gain = zpk(lead_zero,lead_pole,1);
-    k = -1/real(evalfr(tf*H_unit_gain,s));
+    k = -1/real(evalfr(tf*H_unit_gain,s_desired));
     H = zpk(lead_zero,lead_pole,k);
     
     if lead_pole > 0  || lead_zero > 0
@@ -46,13 +47,13 @@ if strcmp(mode,'zero_first')
     end
     
 elseif strcmp(mode,'pole_first')
-    lead_pole = s;
-    theta_lead_pole = atan2((imag(s)-imag(lead_pole)),(real(s)-real(lead_pole)));
+    lead_pole = s_provided;
+    theta_lead_pole = atan2((imag(s_desired)-imag(lead_pole)),(real(s_desired)-real(lead_pole)));
     theta_lead_zero = theta_lead_pole + angle;
-    lead_zero = real(s) - imag(s)/tan(theta_lead_zero);
+    lead_zero = real(s_desired) - imag(s_desired)/tan(theta_lead_zero);
     
     H_unit_gain = zpk(lead_zero,lead_pole,1);
-    k = -1/real(evalfr(tf*H_unit_gain,s));
+    k = -1/real(evalfr(tf*H_unit_gain,s_desired));
     H = zpk(lead_zero,lead_pole,k);
     
     if lead_pole > 0 || lead_zero > 0
@@ -61,10 +62,10 @@ elseif strcmp(mode,'pole_first')
     
 elseif strcmp(mode, 'zero_only') % PD controller, no pole
     theta_lead_zero = angle;
-    lead_zero = real(s) - imag(s)/tan(theta_lead_zero);
+    lead_zero = real(s_desired) - imag(s_desired)/tan(theta_lead_zero);
     
     H_unit_gain = zpk(lead_zero,[],1);
-    k = -1/real(evalfr(tf*H_unit_gain,s));
+    k = -1/real(evalfr(tf*H_unit_gain,s_desired));
     H = zpk(lead_zero,[],k);
     
     if lead_zero > 0
